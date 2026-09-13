@@ -1,8 +1,10 @@
 # Required checks for every pull request. Job names are the check names that the
 # main-branch ruleset requires: test, gitleaks, docker.
 #
-# Static-site projects delete the docker job and remove it from the ruleset;
-# Cloudflare builds and deploys them, and adds its own "Workers Builds" check.
+# Static-site projects delete the docker job and deploy.yml, and remove docker from
+# the ruleset; Cloudflare builds and deploys them, and adds its own "Workers Builds"
+# check. P410 projects keep deploy.yml, which publishes the image only after this
+# workflow succeeds on main.
 
 name: CI
 
