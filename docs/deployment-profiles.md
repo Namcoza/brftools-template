@@ -78,7 +78,11 @@ Once per project, in the Cloudflare dashboard:
 
 - **Pull request:** a `Workers Builds: <project>` check appears alongside `test` and `gitleaks`, and a Cloudflare bot comment gives the branch preview URL. Previews never change production.
 - **After merge:** the custom domain serves the change, and the Worker's **Deployments** tab shows a version from the merge commit.
-- **Roll back:** Worker → **Deployments** → the last good version → **Rollback**. Then revert the bad commit through a pull request so the next merge does not re-publish it.
+- **Roll back to a specific version, never blindly to "previous version".** A Worker created in the dashboard keeps Cloudflare's setup "Hello world" versions in its history, and **Rollback to previous version** can land on one of those — on the first pilot it put "Hello world" on the live site.
+  1. Worker → **Deployments** → **Versions**: find the version built from the last good merge commit.
+  2. Open its preview URL — `https://<first 8 characters of the version ID>-<project>.<account subdomain>.workers.dev` — and confirm it is the page you expect.
+  3. Deploy that version at 100%.
+  4. Revert the bad commit through a pull request, so the next merge does not re-publish it.
 
 ---
 
