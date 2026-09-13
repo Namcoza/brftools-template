@@ -14,7 +14,7 @@ Fill this in before any code is written. Work through `docs/intake-checklist.md`
 
 ## Hosting profile
 
-<!-- Cloudflare Pages or P410 Docker — see docs/deployment-profiles.md. Say why. -->
+<!-- Static site on Cloudflare, or P410 Docker — see docs/deployment-profiles.md. Say why. -->
 
 ## Access
 
