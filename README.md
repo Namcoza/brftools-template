@@ -18,7 +18,7 @@ Starting point for every new brftools project. It gives an AI agent everything i
    npm test
    ```
 4. Rename the project: `name` in `package.json`, the title of this README, the `IMAGE` default in `compose.yml`.
-5. Choose the hosting profile and remove the files it does not use — see [`docs/deployment-profiles.md`](docs/deployment-profiles.md).
+5. Choose the hosting profile and remove the files it does not use — see [`docs/deployment-profiles.md`](docs/deployment-profiles.md). A static site also adds `wrangler.jsonc`, before connecting Cloudflare.
 6. Rewrite this README's sections below for the project, and delete this "Start a new project" section.
 7. Protect `main` — see [Repository settings](#repository-settings).
 
@@ -54,7 +54,7 @@ AGENTS.md            rules for AI-assisted changes (CLAUDE.md points here)
 PRODUCT.md           purpose, users and acceptance criteria
 docs/                intake checklist, deployment profiles, decisions
 src/                 application code — config.ts, app.ts, server.ts
-public/              static assets; the whole site for Pages projects
+public/              static assets; the whole site for static-site projects
 tests/               node:test tests
 scripts/             build helpers
 Dockerfile           P410 profile only
@@ -66,7 +66,7 @@ compose.yml          P410 profile only — production runtime declaration
 
 ## Hosting profile
 
-<!-- Cloudflare Pages or P410 Docker. Delete the other. -->
+<!-- Static site on Cloudflare, or P410 Docker. Delete the other. -->
 
 **Not yet chosen.**
 
@@ -91,7 +91,7 @@ None. The app is stateless and rebuilt entirely from this repository.
 See [`docs/deployment-profiles.md`](docs/deployment-profiles.md) for the chosen profile. Replace this paragraph with the project's specific hostname-free steps once it is deployed.
 
 - **Deploy:** merge a passing pull request to `main`.
-- **Verify:** `GET /healthz` returns `{"status":"ok","version":"<commit sha>"}`.
+- **Verify:** `GET /healthz` returns `{"status":"ok","version":"<commit sha>"}` (P410), or the site shows the change (static).
 - **Roll back:** as described for the profile.
 
 ## Repository settings
@@ -99,7 +99,7 @@ See [`docs/deployment-profiles.md`](docs/deployment-profiles.md) for the chosen 
 Set once per repository, on GitHub under **Settings → Rules → Rulesets**, a ruleset targeting the default branch with:
 
 - Require a pull request before merging
-- Require status checks to pass: `test`, `gitleaks`, and `docker` for the P410 profile
+- Require status checks to pass: `test` and `gitleaks`, plus `docker` for the P410 profile
 - Block force pushes
 - Restrict deletions
 

@@ -17,7 +17,7 @@ Does it need any of the following?
 - [ ] Files that must survive a restart
 - [ ] Data or integrations that belong on the home server
 
-**None ticked → Cloudflare Pages.** Any ticked → P410 Docker. Default to Pages whenever it is genuinely enough. See `deployment-profiles.md`.
+**None ticked → static site on Cloudflare.** Any ticked → P410 Docker. Default to the static site whenever it is genuinely enough. See `deployment-profiles.md`.
 
 ## 3. Data
 
@@ -40,7 +40,7 @@ Anything that accepts input, stores data or administers something is not public 
 
 ## 6. Backup and recovery
 
-- What must be backed up? ("Nothing — it is rebuilt from the repository" is a valid answer for most Pages projects.)
+- What must be backed up? ("Nothing — it is rebuilt from the repository" is a valid answer for most static sites.)
 - How will a restore be proven to work?
 - Does it need a database migration strategy?
 
