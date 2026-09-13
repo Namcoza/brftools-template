@@ -30,7 +30,7 @@ Then open a session with an agent in the project folder. `AGENTS.md` (and `CLAUD
 
 | Tool | Version | Install (Mac) |
 |---|---|---|
-| Node.js | 24 LTS (`.nvmrc`) | `brew install node@24` |
+| Node.js | 24 LTS (`.nvmrc`) | `brew install node@24 && brew link --overwrite node@24` — `node@24` is not linked onto the PATH by default |
 | gitleaks | 8.x | `brew install gitleaks` |
 
 Docker is not needed for local development. CI builds and tests the container image.
