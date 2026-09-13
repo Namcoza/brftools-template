@@ -105,4 +105,4 @@ Set once per repository, on GitHub under **Settings → Rules → Rulesets**, a 
 
 And under **Settings → Code security**: secret scanning and push protection on.
 
-For the P410 profile, after the first image is published, make the package public (**Packages → the package → Package settings → Change visibility**) so the server can pull it without a credential.
+For the P410 profile, check after the first publish that the image package is public, so the server can pull it without a credential. Packages published from these public repositories have been public by default; if one is private, change it under **Packages → the package → Package settings → Change visibility**.
