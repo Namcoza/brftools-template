@@ -17,7 +17,7 @@ Starting point for every new brftools project. It gives an AI agent everything i
    npm ci
    npm test
    ```
-4. Rename the project: `name` in `package.json`, the title of this README, the `IMAGE` default in `compose.yml`.
+4. Rename the project: `name` in `package.json`, the title of this README, and in `compose.yml` the `IMAGE` default and the network alias.
 5. Choose the hosting profile and remove the files it does not use — see [`docs/deployment-profiles.md`](docs/deployment-profiles.md). A static site also adds `wrangler.jsonc`, before connecting Cloudflare.
 6. Rewrite this README's sections below for the project, and delete this "Start a new project" section.
 7. Protect `main` — see [Repository settings](#repository-settings).
@@ -61,7 +61,7 @@ Dockerfile           P410 profile only
 compose.yml          P410 profile only — production runtime declaration
 .env.example         variable names only; never values
 .gitleaks.toml       secret-scanning rules
-.github/workflows/   ci.yml — the required checks
+.github/workflows/   ci.yml — the required checks; deploy.yml — publishes the image (P410 profile only)
 ```
 
 ## Hosting profile
@@ -104,3 +104,5 @@ Set once per repository, on GitHub under **Settings → Rules → Rulesets**, a 
 - Restrict deletions
 
 And under **Settings → Code security**: secret scanning and push protection on.
+
+For the P410 profile, after the first image is published, make the package public (**Packages → the package → Package settings → Change visibility**) so the server can pull it without a credential.

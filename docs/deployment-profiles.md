@@ -8,10 +8,10 @@ Both profiles share the same rule: **merging to `main` deploys.** Nothing reache
 |---|---|---|
 | Use when | Output is static HTML, CSS and JavaScript | Needs a server process, PostgreSQL, Redis, background jobs or durable files |
 | Runs as | Cloudflare Worker serving static assets | Container on the P410 |
-| Built by | Cloudflare Workers Builds, on push | GitHub Actions, on merge to `main` |
+| Built by | Cloudflare Workers Builds, on push | GitHub Actions, after CI passes on `main` |
 | Release unit | Worker version | Container image tagged with the commit SHA |
 | Pull request preview | Yes — branch preview URL posted on the pull request | No (deferred) |
-| Rollback | Roll back to a previous Worker version | Re-point at the previous image digest |
+| Rollback | Roll back to a previous Worker version | The deploy script's rollback, which holds the bad release |
 | Target rollback time | Under 10 minutes | Under 15 minutes |
 
 > **Why a Worker and not Cloudflare Pages?** Cloudflare's dashboard now creates Workers by default, and a static-assets Worker gives everything the Pages path did: Git deploys from `main`, branch previews, custom domains and rollback. Proven on the first pilot, `brftools-home`.
@@ -25,6 +25,7 @@ Both profiles share the same rule: **merging to `main` deploys.** Nothing reache
 Delete what a static site does not use:
 
 - `Dockerfile`, `.dockerignore`, `compose.yml`
+- `.github/workflows/deploy.yml`
 - the `docker` job in `.github/workflows/ci.yml`, and `docker` from the ruleset's required checks
 
 Keep `src/` and its tests: the Node server is the local dev server for `npm run dev`. It never runs in production. Keep `public/` — it is the site. `npm run build` writes it to `dist/public/`.
@@ -90,9 +91,7 @@ Once per project, in the Cloudflare dashboard:
 
 ### Files
 
-Keep everything. The template's `Dockerfile` and `compose.yml` already satisfy the container rules below.
-
-`.github/workflows/deploy.yml` — building and publishing the image to GHCR — is added in **Phase 3** of the platform build, not by the template.
+Keep everything: `Dockerfile`, `compose.yml` and `.github/workflows/deploy.yml` already follow the rules below. Rename the network alias in `compose.yml` to the project name.
 
 ### Container rules
 
@@ -102,17 +101,26 @@ These are checked in review and must not be relaxed without asking:
 - `mem_limit` and `cpus` set in `compose.yml` — the host also runs the family's Minecraft servers
 - Runs as a non-root user; `read_only`, `no-new-privileges`, all capabilities dropped
 - Not `privileged`, no host networking, no Docker socket mount
-- No published ports — the reverse proxy reaches the app over the shared network
-- Persistent data declared as a named volume, and listed in `README.md` with its backup treatment
+- No published ports — the reverse proxy reaches the app over the shared network by its **project alias**, never by the service name `app`
+- Persistent data declared as a named volume, or as a database, and listed in `README.md` with its backup treatment
+
+### If the app uses PostgreSQL
+
+`brftools-status` is the worked example.
+
+- The app gets **its own database and role** on the shared instance, set up on the platform — never the shared admin user. The connection string reaches the app as `DATABASE_URL`, rendered from 1Password at deploy time.
+- Schema changes are **numbered SQL files applied once each at startup**, inside a transaction, each carrying its own recovery note.
+- `/healthz` returns `503` when the database is unreachable, so a release that cannot reach its data is not kept.
+- Tests that need a database read `TEST_DATABASE_URL`. CI provides one with a Postgres service container, and the `docker` job runs the image against a throwaway database. Tests that drop tables should refuse any database whose name does not contain `test`.
 
 ### How a release reaches the server
 
 1. Merge to `main`.
-2. GitHub Actions tests the code and publishes an image to GHCR, tagged with the full commit SHA.
-3. The P410's deploy script pulls that image, starts it, and waits for the health check.
-4. If the health check fails, the script returns to the previous image automatically.
+2. CI passes on `main`; then `deploy.yml` publishes `ghcr.io/<owner>/<repo>:<full sha>` and moves `:main` to it. GitHub holds no credential for the server.
+3. Every five minutes the P410's deploy script checks `:main`. A new digest is pulled and started, and must pass its health check. On the pilot, merge to live took about four minutes.
+4. If the health check fails, the script puts the previous release back and holds the failed one so it is not retried. (Implemented; not yet exercised by a real failing release.)
 
-Routing (reverse proxy and public hostname) is configured on the platform, not in this repository.
+Routing (reverse proxy and public hostname), the app's database and its secrets are set up on the platform, not in this repository.
 
 ### Configuration
 
@@ -121,4 +129,5 @@ Real values live only on the server. The repository holds variable **names** in 
 ### Verify and roll back
 
 - **Verify:** `GET /healthz` returns `200` with `version` equal to the merged commit SHA.
-- **Roll back:** run the deploy script against the previous image digest. Database changes are not reversed by rolling back an image — follow the migration's own recovery note.
+- **Roll back:** on the P410, `deploy-app <project> --rollback` returns to the previous image in seconds and **holds** the release it rolled back from, so the timer does not redeploy it. The next merge to `main` deploys normally and clears the hold.
+- Database changes are not reversed by rolling back an image — follow the migration's own recovery note.

@@ -27,9 +27,14 @@ services:
     cap_drop:
       - ALL
 
-    # No published ports: the reverse proxy reaches the app over the shared network.
+    # No published ports: the reverse proxy reaches the app over the shared network by
+    # a project-specific alias — rename it with the project. The service name "app" is
+    # also a name on that network and is shared by every project made from this
+    # template, so routes must always use the project alias.
     networks:
-      - edge
+      edge:
+        aliases:
+          - brftools-template
 
     # Persistent data: none.
     # If the app needs any, declare a named volume here and record it, with its
